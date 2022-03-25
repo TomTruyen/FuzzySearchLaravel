@@ -6,7 +6,6 @@
 
 <!-- Badges -->
 <p align="center">
-  <img src="resources/version.svg" alt="Version">
   <img src="resources/license.svg" alt="License">
 </p>
 
