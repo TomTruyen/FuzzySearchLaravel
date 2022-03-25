@@ -41,5 +41,29 @@ class ServiceProvider extends Provider
 
             return WhereFuzzy::makeOr($this, $field, $value, $extended);
         });
+
+        // Custom Matchers ==> Select your own list of matchers or create your own (MUST EXTEND BaseMatcher)
+        Builder::macro('whereCustomFuzzy', function($field, $value = null, $matchers = []) {
+            // check if first param is a closure and execute it if it is, passing the current builder as parameter
+            // so when $query->orWhereFuzzy, $query will be the current query builder, not a new instance
+            if ($field instanceof Closure) {
+                $field($this);
+
+                return $this;
+            }
+
+            // if $query->orWhereFuzzy is called in the closure, or directly by the query builder, do this
+            return WhereFuzzy::makeCustom($this, $field, $value, $matchers);
+        });
+
+        Builder::macro('orWhereCustomFuzzy', function($field, $value = null, $matchers = []) {
+            if ($field instanceof Closure) {
+                $field($this);
+
+                return $this;
+            }
+
+            return WhereFuzzy::makeCustomOr($this, $field, $value, $matchers);
+        });
     }
 }

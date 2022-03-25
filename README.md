@@ -38,23 +38,51 @@ Fuzzyness automatically registers a service provider containing several macros. 
 
 ### Filtering results
 
-You can perform a fuzzy-search by calling the `whereFuzzy` method. This method takes two parameters. The first, is the field name. The second, is the value to use for the search e.g.
+You can perform a fuzzy-search by calling the `whereFuzzy` method. This method takes three parameters. The first, is the field name. The second, is the value to use for the search e.g., the third is "extended" (default: false). Extended uses all prebuild Matchers but is slower than the non-extended version, but for more specific or accurate results it is advised to set this to ```true```
 
 ```php
 DB::table('users')
-  ->whereFuzzy('name', 'jd') // matches John Doe
+  ->whereFuzzy('name', 'jd', false) // matches John Doe
   ->first();
 
-User::whereFuzzy('name', 'jd') // matches John Doe
+User::whereFuzzy('name', 'jd', false) // matches John Doe
     ->first();
 ```
 
 You can also perform a fuzzy search across multiple columns by chaining several `whereFuzzy` method calls:
 
 ```php
-User::whereFuzzy('name', 'jd')  // matches John Doe
-    ->whereFuzzy('email', 'gm') // matches @gmail.com
+User::whereFuzzy('name', 'jd', false)  // matches John Doe
+    ->whereFuzzy('email', 'gm', false) // matches @gmail.com
     ->first();
+```
+
+You can also choose to pass your own list of "Matchers" for if you want to use a custom matcher or a custom list of existing matchers.
+
+**Note:** You must also pass the score for when a field matches with the matcher
+
+```php
+DB::table('users')
+  ->whereCustomFuzzy('name', 'jd', [StartOfWordsMatcher::class => 35]) // matches John Doe
+  ->first();
+
+User::whereCustomFuzzy('name', 'jd', [StartOfWordsMatcher::class => 35]) // matches John Doe
+    ->first();
+```
+
+### List of preset matchers with scores
+
+```php
+array $matchers = [
+    ExactMatcher::class                 => 100,
+    StartOfStringMatcher::class         => 50,
+    AcronymMatcher::class               => 42,
+    ConsecutiveCharactersMatcher::class => 40,
+    StartOfWordsMatcher::class          => 35,
+    StudlyCaseMatcher::class            => 32,
+    InStringMatcher::class              => 30,
+    TimesInStringMatcher::class         => 8,
+];
 ```
 
 ### Ordering results
@@ -96,27 +124,10 @@ User::whereFuzzy('name', 'jd')
     ->orderBy('relevance_email', 'desc')
     ->first();
 ```
-### Applying a minimum threshold
-
-When using Fuzzyness, an overall score will be assigned to each record within the `_fuzzy_relevance_` column. This score is represented as an `integer` between 0 and 100.
-
-You can enforce a minimum score to restrict the results by using the `withMinimumRelevance()` method. Setting a higher score will return fewer, but likely more-relevant results.
-
-```php
-// Before
-User::whereFuzzy('name', 'jd')
-    ->having('_fuzzy_relevance_', '>',  70)
-    ->first();
-
-// After
-User::whereFuzzy('name', 'jd')
-    ->withMinimumRelevance(70)
-    ->first();
-```
 
 ## Limitations
 
-It is not possible to use the `paginate` method with Fuzzyness as the relevance fields are omitted from the secondary query that Laravel runs to get the count of the records required for `LengthAwarePaginator`. However, you can use the `simplePaginate` method without issue. In many cases this a more preferable option anyway, particularly when dealing with large datasets as the `paginate` method becomes slow when scrolling through large numbers of pages.
+It is not possible to use the `paginate` method with Fuzzyness as the relevance fields are omitted from the secondary query that Laravel runs to get the count of the records required for `LengthAwarePaginator`. However, you can use the `simplePaginate` method without issue or a combination of `skip` and `take`. In many cases this a more preferable option anyway, particularly when dealing with large datasets as the `paginate` method becomes slow when scrolling through large numbers of pages.
 
 ## Contributing
 

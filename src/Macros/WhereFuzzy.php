@@ -75,6 +75,46 @@ class WhereFuzzy
     }
 
     /**
+     * Construct a CUSTOM fuzzy search expression.
+     *
+     **/
+    public static function makeCustom($builder, $field, $value, array $matchers = []): Builder
+    {
+        $value       = static::escapeValue($value);
+        $nativeField = '`' . str_replace('.', '`.`', trim($field, '` ')) . '`';
+
+        if (! is_array($builder->columns) || empty($builder->columns)) {
+            $builder->columns = ['*'];
+        }
+
+        $builder
+            ->addSelect([static::pipelineCustom($field, $nativeField, $value, $matchers)])
+            ->having('fuzzy_relevance_' . str_replace('.', '_', $field), '>', 0);
+
+        return $builder;
+    }
+
+    /**
+     * Construct a CUSTOM fuzzy OR search expression.
+     *
+     **/
+    public static function makeCustomOr($builder, $field, $value, array $matchers = []): Builder
+    {
+        $value       = static::escapeValue($value);
+        $nativeField = '`' . str_replace('.', '`.`', trim($field, '` ')) . '`';
+
+        if (! is_array($builder->columns) || empty($builder->columns)) {
+            $builder->columns = ['*'];
+        }
+
+        $builder
+            ->addSelect([static::pipelineCustom($field, $nativeField, $value, $matchers)])
+            ->orHaving('fuzzy_relevance_' . str_replace('.', '_', $field), '>', 0);
+
+        return $builder;
+    }
+
+    /**
      * Escape value input for fuzzy search.
      */
     protected static function escapeValue($value)
@@ -97,6 +137,19 @@ class WhereFuzzy
             $matchers = array_merge(static::$matchers, static::$extendedMatchers);
         }
 
+        $sql = collect($matchers)->map(
+            fn($multiplier, $matcher) => (new $matcher($multiplier))->buildQueryString("COALESCE($native, '')", $value)
+        );
+
+        return DB::raw($sql->implode(' + ') . ' AS fuzzy_relevance_' . str_replace('.', '_', $field));
+    }
+
+     /**
+     * Execute each of the CUSTOM pattern matching classes to generate the required SQL.
+     *
+     **/
+    protected static function pipelineCustom($field, $native, $value, array $matchers): Expression
+    {
         $sql = collect($matchers)->map(
             fn($multiplier, $matcher) => (new $matcher($multiplier))->buildQueryString("COALESCE($native, '')", $value)
         );
