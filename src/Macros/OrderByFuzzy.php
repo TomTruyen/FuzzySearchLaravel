@@ -1,0 +1,21 @@
+<?php declare(strict_types = 1);
+
+namespace Fuzzyness\Macros;
+
+use Illuminate\Database\Query\Builder;
+
+class OrderByFuzzy
+{
+    /**
+     * Construct a fuzzy search expression.
+     *
+     **/
+    public static function make($builder, $fields) : Builder
+    {
+        foreach ((array) $fields as $field) {
+            $builder->orderBy('fuzzy_relevance_' . str_replace('.', '_', $field), 'desc');
+        }
+
+        return $builder;
+    }
+}

@@ -1,0 +1,42 @@
+{
+    "name": "tomtruyen/fuzzyness",
+    "description": "A package that provides pseudo fuzzy-searching to Laravel database queries based on tomtruyen/Fuzzyness.",
+    "keywords": [
+        "fuzzyness",
+        "php",
+        "laravel",
+        "search",
+        "fuzzy"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "homepage": "https://github.com/TomTruyen/FuzzySearchLaravel",
+    "autoload": {
+        "psr-4": {
+            "Fuzzyness\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Fuzzyness\\Tests\\": "tests"
+        }
+    },
+    "require": {
+        "php": "^7.4|^8.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^6.0",
+        "phpunit/phpunit": "^9.0"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Fuzzyness\\ServiceProvider"
+            ]
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit"
+    },
+    "minimum-stability": "stable"
+}
