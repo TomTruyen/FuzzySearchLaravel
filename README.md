@@ -1,0 +1,2 @@
+# FuzzySearchLaravel
+Basic Fuzzy Search
