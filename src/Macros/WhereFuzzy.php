@@ -2,12 +2,16 @@
 
 namespace Fuzzyness\Macros;
 
-use Fuzzyness\Matchers\ExactMatcher;
 use Illuminate\Support\Facades\DB;
+use Fuzzyness\Matchers\ExactMatcher;
 use Fuzzyness\Matchers\AcronymMatcher;
 use Illuminate\Database\Query\Builder;
-use Fuzzyness\Matchers\StartOfStringMatcher;
+use Fuzzyness\Matchers\InStringMatcher;
+use Fuzzyness\Matchers\StudlyCaseMatcher;
 use Illuminate\Database\Query\Expression;
+use Fuzzyness\Matchers\StartOfWordsMatcher;
+use Fuzzyness\Matchers\StartOfStringMatcher;
+use Fuzzyness\Matchers\TimesInStringMatcher;
 use Fuzzyness\Matchers\ConsecutiveCharactersMatcher;
 
 class WhereFuzzy
