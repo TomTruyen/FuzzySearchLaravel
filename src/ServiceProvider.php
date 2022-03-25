@@ -19,7 +19,7 @@ class ServiceProvider extends Provider
     {
         Builder::macro('orderByFuzzy', fn($fields) => OrderByFuzzy::make($this, $fields));
 
-        Builder::macro('whereFuzzy', function($field, $value = null) {
+        Builder::macro('whereFuzzy', function($field, $value = null, $extended = false) {
             // check if first param is a closure and execute it if it is, passing the current builder as parameter
             // so when $query->orWhereFuzzy, $query will be the current query builder, not a new instance
             if ($field instanceof Closure) {
@@ -29,17 +29,17 @@ class ServiceProvider extends Provider
             }
 
             // if $query->orWhereFuzzy is called in the closure, or directly by the query builder, do this
-            return WhereFuzzy::make($this, $field, $value);
+            return WhereFuzzy::make($this, $field, $value, $extended);
         });
 
-        Builder::macro('orWhereFuzzy', function($field, $value = null) {
+        Builder::macro('orWhereFuzzy', function($field, $value = null, $extended = false) {
             if ($field instanceof Closure) {
                 $field($this);
 
                 return $this;
             }
 
-            return WhereFuzzy::makeOr($this, $field, $value);
+            return WhereFuzzy::makeOr($this, $field, $value, $extended);
         });
     }
 }
