@@ -23,11 +23,18 @@ class WhereFuzzy
         ConsecutiveCharactersMatcher::class => 40,
     ];
 
+    protected static array $extendedMatchers = [
+        StartOfWordsMatcher::class          => 35,
+        StudlyCaseMatcher::class            => 32,
+        InStringMatcher::class              => 30,
+        TimesInStringMatcher::class         => 8,
+    ];
+
     /**
      * Construct a fuzzy search expression.
      *
      **/
-    public static function make($builder, $field, $value): Builder
+    public static function make($builder, $field, $value, bool $extended = false): Builder
     {
         $value       = static::escapeValue($value);
         $nativeField = '`' . str_replace('.', '`.`', trim($field, '` ')) . '`';
@@ -37,7 +44,7 @@ class WhereFuzzy
         }
 
         $builder
-            ->addSelect([static::pipeline($field, $nativeField, $value)])
+            ->addSelect([static::pipeline($field, $nativeField, $value, $extended)])
             ->having('fuzzy_relevance_' . str_replace('.', '_', $field), '>', 0);
 
         return $builder;
@@ -47,7 +54,7 @@ class WhereFuzzy
      * Construct a fuzzy OR search expression.
      *
      **/
-    public static function makeOr($builder, $field, $value): Builder
+    public static function makeOr($builder, $field, $value, bool $extended = false): Builder
     {
         $value       = static::escapeValue($value);
         $nativeField = '`' . str_replace('.', '`.`', trim($field, '` ')) . '`';
@@ -57,7 +64,7 @@ class WhereFuzzy
         }
 
         $builder
-            ->addSelect([static::pipeline($field, $nativeField, $value)])
+            ->addSelect([static::pipeline($field, $nativeField, $value, $extended)])
             ->orHaving('fuzzy_relevance_' . str_replace('.', '_', $field), '>', 0);
 
         return $builder;
@@ -78,9 +85,15 @@ class WhereFuzzy
      * Execute each of the pattern matching classes to generate the required SQL.
      *
      **/
-    protected static function pipeline($field, $native, $value): Expression
+    protected static function pipeline($field, $native, $value, bool $extended = false): Expression
     {
-        $sql = collect(static::$matchers)->map(
+        $matchers = static::$matchers;
+
+        if($extended) {
+            $matchers = array_merge(static::$matchers, static::$extendedMatchers);
+        }
+
+        $sql = collect($matchers)->map(
             fn($multiplier, $matcher) => (new $matcher($multiplier))->buildQueryString("COALESCE($native, '')", $value)
         );
 
