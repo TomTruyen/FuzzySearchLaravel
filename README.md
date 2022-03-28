@@ -15,10 +15,14 @@ This package is based on "Quest" by mattkingshott
 
 ## What is different?
 
-Fuzzyness does not keep track of the total "fuzzy score" of all your "whereFuzzy" calls. 
+* Fuzzyness does not keep track of the total "fuzzy score" of all your "whereFuzzy" calls. 
+   * **Reason**: Not keeping track of total fuzzy score speeds up the querying in a database with 100k+ records by a lot. The downside is that ordering by total fuzzy score is not built-in 
+* Option to add a custom list of matchers
+* Option to use the full list of preset matchers or a slimmed down version
 
-**Reason**: Not keeping track of total fuzzy score speeds up the querying in a database with 100k+ records by a lot. The downside is that ordering by total fuzzy score is not built-in 
 
+
+## About the package
 
 This package enables pseudo fuzzy-searching within Laravel database and Eloquent queries. Due to its pattern matching methods, it only supports **MySQL** or **MariaDB**, though I welcome any PRs to enable support for databases like Postgres.
 
