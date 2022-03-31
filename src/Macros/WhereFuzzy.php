@@ -14,7 +14,6 @@ use Fuzzyness\Matchers\StartOfWordsMatcher;
 use Fuzzyness\Matchers\StartOfStringMatcher;
 use Fuzzyness\Matchers\TimesInStringMatcher;
 use Fuzzyness\Matchers\ConsecutiveCharactersMatcher;
-use Fuzzyness\Matchers\StringLengthMatcher;
 
 class WhereFuzzy
 {
@@ -28,7 +27,6 @@ class WhereFuzzy
         SpacelessMatcher::class             => 45,
         AcronymMatcher::class               => 42,
         ConsecutiveCharactersMatcher::class => 40,
-        StringLengthMatcher::class          => 15,
     ];
 
     protected static array $extendedMatchers = [
