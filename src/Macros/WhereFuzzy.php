@@ -7,12 +7,14 @@ use Fuzzyness\Matchers\ExactMatcher;
 use Fuzzyness\Matchers\AcronymMatcher;
 use Illuminate\Database\Query\Builder;
 use Fuzzyness\Matchers\InStringMatcher;
+use Fuzzyness\Matchers\SpacelessMatcher;
 use Fuzzyness\Matchers\StudlyCaseMatcher;
 use Illuminate\Database\Query\Expression;
 use Fuzzyness\Matchers\StartOfWordsMatcher;
 use Fuzzyness\Matchers\StartOfStringMatcher;
 use Fuzzyness\Matchers\TimesInStringMatcher;
 use Fuzzyness\Matchers\ConsecutiveCharactersMatcher;
+use Fuzzyness\Matchers\StringLengthMatcher;
 
 class WhereFuzzy
 {
@@ -23,8 +25,10 @@ class WhereFuzzy
     protected static array $matchers = [
         ExactMatcher::class                 => 100,
         StartOfStringMatcher::class         => 50,
+        SpacelessMatcher::class             => 45,
         AcronymMatcher::class               => 42,
         ConsecutiveCharactersMatcher::class => 40,
+        StringLengthMatcher::class          => 15,
     ];
 
     protected static array $extendedMatchers = [
