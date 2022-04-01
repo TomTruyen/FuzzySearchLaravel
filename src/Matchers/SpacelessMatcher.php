@@ -8,22 +8,7 @@ class SpacelessMatcher extends BaseMatcher
      * The operator to use for the WHERE clause.
      *
      **/
-    protected string $operator = '=';
-
-    /**
-     * The process for building the query string.
-     *
-     **/
-    public function buildQueryString(string $field, string $value) : string
-    {
-        $search = $this->formatSearchString($value);
-
-        return "IF(
-                    CHAR_LENGTH(REPLACE($field, ' ', '')) {$this->operator} CHAR_LENGTH('$search') AND $field LIKE '%$search%',
-                    {$this->multiplier},
-                    0
-                )";
-    }
+    protected string $operator = 'LIKE';
 
     /**
      * Format the given search term.
@@ -33,6 +18,6 @@ class SpacelessMatcher extends BaseMatcher
     {
         $value = str_replace(' ', '', $value);
 
-        return $value;
+        return "%$value%";
     }
 }
