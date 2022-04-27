@@ -145,7 +145,7 @@ class WhereFuzzy
             fn($multiplier, $matcher) => (new $matcher($multiplier))->buildQueryString("COALESCE($native, '')", $value)
         );
 
-        return DB::raw($sql->implode(' + ') . ' AS fuzzy_relevance_' . str_replace('.', '_', $field));
+        return DB::raw('MAX('.$sql->implode(' + ') . ') AS fuzzy_relevance_' . str_replace('.', '_', $field));
     }
 
      /**
@@ -158,6 +158,6 @@ class WhereFuzzy
             fn($multiplier, $matcher) => (new $matcher($multiplier))->buildQueryString("COALESCE($native, '')", $value)
         );
 
-        return DB::raw($sql->implode(' + ') . ' AS fuzzy_relevance_' . str_replace('.', '_', $field));
+        return DB::raw('MAX('.$sql->implode(' + ') . ') AS fuzzy_relevance_' . str_replace('.', '_', $field));
     }
 }
