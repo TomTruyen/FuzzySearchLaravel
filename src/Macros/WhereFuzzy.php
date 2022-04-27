@@ -42,7 +42,7 @@ class WhereFuzzy
      * Construct a fuzzy search expression.
      *
      **/
-    public static function make($builder, $field, $value, bool $extended = false): Builder
+    public static function make($builder, $field, $value, bool $extended = false, $function = null): Builder
     {
         $value       = static::escapeValue($value);
         $nativeField = '`' . str_replace('.', '`.`', trim($field, '` ')) . '`';
@@ -52,7 +52,7 @@ class WhereFuzzy
         }
 
         $builder
-            ->addSelect([static::pipeline($field, $nativeField, $value, $extended)])
+            ->addSelect([static::pipeline($field, $nativeField, $value, $extended, $function)])
             ->having('fuzzy_relevance_' . str_replace('.', '_', $field), '>', 0);
 
         return $builder;
@@ -62,7 +62,7 @@ class WhereFuzzy
      * Construct a fuzzy OR search expression.
      *
      **/
-    public static function makeOr($builder, $field, $value, bool $extended = false): Builder
+    public static function makeOr($builder, $field, $value, bool $extended = false, $function = null): Builder
     {
         $value       = static::escapeValue($value);
         $nativeField = '`' . str_replace('.', '`.`', trim($field, '` ')) . '`';
@@ -72,7 +72,7 @@ class WhereFuzzy
         }
 
         $builder
-            ->addSelect([static::pipeline($field, $nativeField, $value, $extended)])
+            ->addSelect([static::pipeline($field, $nativeField, $value, $extended, $function)])
             ->orHaving('fuzzy_relevance_' . str_replace('.', '_', $field), '>', 0);
 
         return $builder;
@@ -82,7 +82,7 @@ class WhereFuzzy
      * Construct a CUSTOM fuzzy search expression.
      *
      **/
-    public static function makeCustom($builder, $field, $value, array $matchers = []): Builder
+    public static function makeCustom($builder, $field, $value, array $matchers = [], $function = null): Builder
     {
         $value       = static::escapeValue($value);
         $nativeField = '`' . str_replace('.', '`.`', trim($field, '` ')) . '`';
@@ -92,7 +92,7 @@ class WhereFuzzy
         }
 
         $builder
-            ->addSelect([static::pipelineCustom($field, $nativeField, $value, $matchers)])
+            ->addSelect([static::pipelineCustom($field, $nativeField, $value, $matchers, $function)])
             ->having('fuzzy_relevance_' . str_replace('.', '_', $field), '>', 0);
 
         return $builder;
@@ -102,7 +102,7 @@ class WhereFuzzy
      * Construct a CUSTOM fuzzy OR search expression.
      *
      **/
-    public static function makeCustomOr($builder, $field, $value, array $matchers = []): Builder
+    public static function makeCustomOr($builder, $field, $value, array $matchers = [], $function = null): Builder
     {
         $value       = static::escapeValue($value);
         $nativeField = '`' . str_replace('.', '`.`', trim($field, '` ')) . '`';
@@ -112,7 +112,7 @@ class WhereFuzzy
         }
 
         $builder
-            ->addSelect([static::pipelineCustom($field, $nativeField, $value, $matchers)])
+            ->addSelect([static::pipelineCustom($field, $nativeField, $value, $matchers, $function)])
             ->orHaving('fuzzy_relevance_' . str_replace('.', '_', $field), '>', 0);
 
         return $builder;
@@ -133,7 +133,7 @@ class WhereFuzzy
      * Execute each of the pattern matching classes to generate the required SQL.
      *
      **/
-    protected static function pipeline($field, $native, $value, bool $extended = false): Expression
+    protected static function pipeline($field, $native, $value, bool $extended, $function): Expression
     {
         $matchers = static::$matchers;
 
@@ -145,18 +145,23 @@ class WhereFuzzy
             fn($multiplier, $matcher) => (new $matcher($multiplier))->buildQueryString("COALESCE($native, '')", $value)
         );
 
-        return DB::raw('MAX('.$sql->implode(' + ') . ') AS fuzzy_relevance_' . str_replace('.', '_', $field));
+        if($function) {
+            return DB::raw($function.'('.$sql->implode(' + ') . ') AS fuzzy_relevance_' . str_replace('.', '_', $field));
+        }
+
+        return DB::raw($sql->implode(' + ') . ' AS fuzzy_relevance_' . str_replace('.', '_', $field));
     }
 
      /**
      * Execute each of the CUSTOM pattern matching classes to generate the required SQL.
      *
      **/
-    protected static function pipelineCustom($field, $native, $value, array $matchers): Expression
+    protected static function pipelineCustom($field, $native, $value, array $matchers, $function): Expression
     {
         $sql = collect($matchers)->map(
             fn($multiplier, $matcher) => (new $matcher($multiplier))->buildQueryString("COALESCE($native, '')", $value)
         );
+
 
         return DB::raw('MAX('.$sql->implode(' + ') . ') AS fuzzy_relevance_' . str_replace('.', '_', $field));
     }
