@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Fuzzyness\Macros;
 
@@ -28,7 +30,7 @@ class WhereFuzzy
         SpacelessLengthMatcher::class       => 45,
         AcronymMatcher::class               => 42,
         ConsecutiveCharactersMatcher::class => 40,
-        SpacelessMatcher::class             => 35,      
+        SpacelessMatcher::class             => 35,
     ];
 
     protected static array $extendedMatchers = [
@@ -47,11 +49,11 @@ class WhereFuzzy
         $value       = static::escapeValue($value);
         $nativeField = '`' . str_replace('.', '`.`', trim($field, '` ')) . '`';
 
-        if (! is_array($builder->columns) || empty($builder->columns)) {
+        if (!is_array($builder->columns) || empty($builder->columns)) {
             $builder->columns = ['*'];
         }
 
-        
+
 
         $builder
             ->addSelect([static::pipeline($field, $nativeField, $value, $function, $rating)])
@@ -69,7 +71,7 @@ class WhereFuzzy
         $value       = static::escapeValue($value);
         $nativeField = '`' . str_replace('.', '`.`', trim($field, '` ')) . '`';
 
-        if (! is_array($builder->columns) || empty($builder->columns)) {
+        if (!is_array($builder->columns) || empty($builder->columns)) {
             $builder->columns = ['*'];
         }
 
@@ -89,7 +91,7 @@ class WhereFuzzy
         $value       = static::escapeValue($value);
         $nativeField = '`' . str_replace('.', '`.`', trim($field, '` ')) . '`';
 
-        if (! is_array($builder->columns) || empty($builder->columns)) {
+        if (!is_array($builder->columns) || empty($builder->columns)) {
             $builder->columns = ['*'];
         }
 
@@ -109,7 +111,7 @@ class WhereFuzzy
         $value       = static::escapeValue($value);
         $nativeField = '`' . str_replace('.', '`.`', trim($field, '` ')) . '`';
 
-        if (! is_array($builder->columns) || empty($builder->columns)) {
+        if (!is_array($builder->columns) || empty($builder->columns)) {
             $builder->columns = ['*'];
         }
 
@@ -140,39 +142,41 @@ class WhereFuzzy
         $matchers = static::$matchers;
 
         $sql = collect($matchers)->map(
-            fn($multiplier, $matcher) => (new $matcher($multiplier))->buildQueryString("COALESCE($native, '')", $value)
+            fn ($multiplier, $matcher) => (new $matcher($multiplier))->buildQueryString("COALESCE($native, '')", $value)
         );
 
         $ratingSql = null;
-        if($rating != null && is_array($rating)) {
-            $ratingSql = $rating['table'] . '.' . $rating['field'] . ' / (SELECT MAX(' . $rating['table'] . ') FROM ' . $rating['table'] . ' * 100';
-        }
 
-        if($function) {
-            return DB::raw($function.'('.$sql->implode(' + ') . ') AS fuzzy_relevance_' . str_replace('.', '_', $field));
+
+        if ($rating != null && is_array($rating)) {
+            $ratingSql = '(' . $rating['table'] . '.' . $rating['field'] . ' / (SELECT MAX(' . $rating['field'] . ') FROM ' . $rating['table'] . ')) * 100';
         }
 
         $query = $sql->implode(' + ');
-        if($ratingSql) {
-            $query .= ' + ' . $ratingSql . ')';
+        if ($ratingSql != null) {
+            $query .= ' + ' . $ratingSql;
+        }
+
+        if ($function) {
+            return DB::raw($function . '(' . $query . ') AS fuzzy_relevance_' . str_replace('.', '_', $field));
         }
 
         return DB::raw($query . ' AS fuzzy_relevance_' . str_replace('.', '_', $field));
     }
 
-     /**
+    /**
      * Execute each of the CUSTOM pattern matching classes to generate the required SQL.
      *
      **/
     protected static function pipelineCustom($field, $native, $value, array $matchers, $function): Expression
     {
         $sql = collect($matchers)->map(
-            fn($multiplier, $matcher) => (new $matcher($multiplier))->buildQueryString("COALESCE($native, '')", $value)
+            fn ($multiplier, $matcher) => (new $matcher($multiplier))->buildQueryString("COALESCE($native, '')", $value)
         );
 
-        
 
 
-        return DB::raw('MAX('.$sql->implode(' + ') . ') AS fuzzy_relevance_' . str_replace('.', '_', $field));
+
+        return DB::raw('MAX(' . $sql->implode(' + ') . ') AS fuzzy_relevance_' . str_replace('.', '_', $field));
     }
 }
