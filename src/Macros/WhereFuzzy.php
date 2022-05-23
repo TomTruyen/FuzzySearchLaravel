@@ -40,6 +40,8 @@ class WhereFuzzy
         TimesInStringMatcher::class         => 8,
     ];
 
+    protected static int $ratingScale = 15;
+
     /**
      * Construct a fuzzy search expression.
      *
@@ -149,7 +151,7 @@ class WhereFuzzy
 
 
         if ($rating != null && is_array($rating)) {
-            $ratingSql = '(' . $rating['table'] . '.' . $rating['field'] . ' / (SELECT MAX(' . $rating['field'] . ') FROM ' . $rating['table'] . ')) * 100';
+            $ratingSql = '(' . $rating['table'] . '.' . $rating['field'] . ' / (SELECT MAX(' . $rating['field'] . ') FROM ' . $rating['table'] . ')) * ' . self::$ratingScale;
         }
 
         $query = $sql->implode(' + ');
