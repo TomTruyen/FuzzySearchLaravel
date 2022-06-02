@@ -40,7 +40,7 @@ class WhereFuzzy
         TimesInStringMatcher::class         => 8,
     ];
 
-    protected static int $ratingScale = 15;
+    protected static int $ratingScale = 7;
 
     /**
      * Construct a fuzzy search expression.
